@@ -17,10 +17,13 @@ class PWMDriverMeta(type):
 class PWMDriver(metaclass=PWMDriverMeta):
     __i2c = busio.I2C(SCL, SDA)
     __pca = PCA9685(__i2c, address=0x41, reference_clock_speed=25395200)
-    __pca.frequency = 100
 
     def __init__(self):
-        pass
+        self.__pca.reset()
+        self.__pca.frequency = 100
+
+    def __del__(self):
+        self.__pca.deinit()
 
     def getChannel(self, id) -> PCAChannels:
-        return self.__pca.channels(id)
+        return self.__pca.channels[id]
