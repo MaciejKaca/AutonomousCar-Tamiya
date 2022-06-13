@@ -1,5 +1,7 @@
+from configparser import ConverterMapping
 from adafruit_motor import servo
 from parts.pwm_driver import PWMDriver
+from utils.conversion import Converter
 
 class WheelMeta(type):
     _instances = {}
@@ -24,6 +26,8 @@ class Wheel(metaclass=WheelMeta):
 
     MAX_ANGLE = int((__MAX_ANGLE-__MIN_ANGLE)/2)
     MIN_ANGLE = int(-MAX_ANGLE)
+
+    converter = Converter(MIN_ANGLE, MAX_ANGLE, __MIN_ANGLE, __MAX_ANGLE)
 
     def __init__(self):
         pass
@@ -61,6 +65,6 @@ class Wheel(metaclass=WheelMeta):
 
     def __setAngle(self, angle: int):
         if self.__validateAngle(angle):
-            converted = int(self.__convertAngle(angle))
+            converted = self.converter(angle)
             if self.__validateTargetAngle(converted):
                 self.__wheelServo.angle = converted
