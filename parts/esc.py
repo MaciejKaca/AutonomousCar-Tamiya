@@ -13,7 +13,7 @@ class ESCMeta(type):
 
 class ESC(metaclass=ESCMeta):
     __pwmDriver = PWMDriver()
-    __ESC_CHANNEL_ID = 0
+    __ESC_CHANNEL_ID = 3
 
     __MIN_PWM_VALUE = int(0)
     __MAX_PWM_VALUE = int(10000)
@@ -36,6 +36,9 @@ class ESC(metaclass=ESCMeta):
         pass
 
     def setSpeed(self, targetSpeed : int):
-        pwm = self.__fromSpeedToPwm.getTargetValue(targetSpeed)
+        pwm = self.__fromSpeedToPwm.getTargetValue(-targetSpeed)
         targetValue = self.__fromPwmToValueDriver.getTargetValue(pwm)
         self.__ESCChannel.duty_cycle = targetValue
+
+    def __del__(self):
+        self.setSpeed(0)
