@@ -16,5 +16,5 @@ class Converter:
         self.__TARGET_MIDDLE = self.__TARGET_MIN + ((self.__TARGET_MAX - self.__TARGET_MIN) / 2)
         self.__SCALE = (self.__TARGET_MAX - self.__TARGET_MIN) / (self.__SOURCE_MAX - self.__SOURCE_MIN)
 
-    def convert(self, number) -> int:
+    def getTargetValue(self, number) -> int:
         return (self.__TARGET_MIDDLE + (number * self.__SCALE))
