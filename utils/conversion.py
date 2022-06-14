@@ -15,4 +15,10 @@ class Converter:
         self.__SCALE = (self.__TARGET_MAX - self.__TARGET_MIN) / (self.__SOURCE_MAX - self.__SOURCE_MIN)
 
     def getTargetValue(self, number) -> int:
+        if number > self.__SOURCE_MAX:
+            return self.__TARGET_MAX
+
+        if number < self.__SOURCE_MIN:
+            return self.__TARGET_MIN 
+
         return int((self.__TARGET_MAX - ((self.__SOURCE_MAX - number) * self.__SCALE)))
