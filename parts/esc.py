@@ -49,7 +49,7 @@ class ESC(metaclass=ESCMeta):
 
     def setSpeedForward(self, targetSpeed : int):
         if self.__validSpeed(targetSpeed):
-            pwm = self.__fromSpeedToPwm.getTargetValue(-targetSpeed)
+            pwm = self.__fromSpeedToForward.getTargetValue(-targetSpeed)
             targetValue = self.__fromPwmToValueDriver.getTargetValue(pwm)
             self.__ESCChannel.duty_cycle = targetValue
 
@@ -65,7 +65,7 @@ class ESC(metaclass=ESCMeta):
             self.__ESCChannel.duty_cycle = targetValue
             time.sleep(0.1)
 
-            pwm = self.__fromSpeedToPwm.getTargetValue(targetSpeed)
+            pwm = self.__fromSpeedToBackward.getTargetValue(targetSpeed)
             targetValue = self.__fromPwmToValueDriver.getTargetValue(pwm)
             self.__ESCChannel.duty_cycle = targetValue
 
@@ -90,4 +90,4 @@ class ESC(metaclass=ESCMeta):
         self.__ESCChannel.duty_cycle = targetValue
 
     def __del__(self):
-        self.setSpeed(0)
+        self.setNeutral()
