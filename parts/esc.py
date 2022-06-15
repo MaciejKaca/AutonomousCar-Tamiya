@@ -22,21 +22,23 @@ class ESC(metaclass=ESCMeta):
     __MIN_PWM_DRIVER_VALUE = 0x0000
     __MAX_PWM_DRIVER_VALUE = 0xFFFF
 
-    __MIN_TARGET_PWM = int(500)
-    __MAX_TARGET_PWM = int(2500)
+    __MIN_TARGET_PWM = int(1000)
+    __MAX_TARGET_PWM = int(2000)
     __NEUTRAL_TARGET_PWM = int(1500)
-    __PWM_THRESHOLD = int(50)
+    __PWM_THRESHOLD = int(40)
+    __PWM_TARGET_FOR_EACH_SIDE = (__MAX_TARGET_PWM-__MIN_TARGET_PWM)/2
 
     MAX_SPEED = int((__MAX_TARGET_PWM-__MIN_TARGET_PWM)/2)
     MIN_SPEED = int(0)
 
     __ESCChannel = __pwmDriver.getChannel(__ESC_CHANNEL_ID)
 
-    __fromSpeedToForward = Converter(MIN_SPEED, MAX_SPEED, __NEUTRAL_TARGET_PWM, __MAX_TARGET_PWM)
-    __fromSpeedToBackward= Converter(MIN_SPEED, MAX_SPEED, __MIN_TARGET_PWM, __NEUTRAL_TARGET_PWM)
+    __fromSpeedToForward = Converter(MIN_SPEED, MAX_SPEED, 0, __PWM_TARGET_FOR_EACH_SIDE)
+    __fromSpeedToBackward= Converter(MIN_SPEED, MAX_SPEED, 0, __PWM_TARGET_FOR_EACH_SIDE)
     __fromPwmToValueDriver = Converter(__MIN_PWM_VALUE, __MAX_PWM_VALUE, __MIN_PWM_DRIVER_VALUE, __MAX_PWM_DRIVER_VALUE)
 
     wasBraking = False
+    wasReverse = False
 
     def __init__(self):
         pass
@@ -49,45 +51,52 @@ class ESC(metaclass=ESCMeta):
 
     def setSpeedForward(self, targetSpeed : int):
         if self.__validSpeed(targetSpeed):
-            pwm = self.__fromSpeedToForward.getTargetValue(-targetSpeed)
+            pwm = self.__fromSpeedToForward.getTargetValue(targetSpeed)
+            pwm = self.__NEUTRAL_TARGET_PWM - pwm
             targetValue = self.__fromPwmToValueDriver.getTargetValue(pwm)
             self.__ESCChannel.duty_cycle = targetValue
+            self.wasBraking = False
 
     def setSpeedBackward(self, targetSpeed : int):
-        if self.__validSpeed(targetSpeed):
-            targetValue = self.__fromPwmToValueDriver.getTargetValue(self.__NEUTRAL_TARGET_PWM + self.__PWM_THRESHOLD)
-            self.__ESCChannel.duty_cycle = targetValue
-            time.sleep(0.1)
-            targetValue = self.__fromPwmToValueDriver.getTargetValue(self.__NEUTRAL_TARGET_PWM - self.__PWM_THRESHOLD)
-            self.__ESCChannel.duty_cycle = targetValue
-            time.sleep(0.1)
-            targetValue = self.__fromPwmToValueDriver.getTargetValue(self.__NEUTRAL_TARGET_PWM)
-            self.__ESCChannel.duty_cycle = targetValue
-            time.sleep(0.1)
-
-            pwm = self.__fromSpeedToBackward.getTargetValue(targetSpeed)
-            targetValue = self.__fromPwmToValueDriver.getTargetValue(pwm)
-            self.__ESCChannel.duty_cycle = targetValue
-
-    def brake(self, force : int):
-        if self.__validSpeed(force):
-            if self.wasBraking:
+        if self.__validSpeed(targetSpeed) and targetSpeed > 0:
+            if not self.wasReverse:
                 targetValue = self.__fromPwmToValueDriver.getTargetValue(self.__NEUTRAL_TARGET_PWM + self.__PWM_THRESHOLD)
                 self.__ESCChannel.duty_cycle = targetValue
                 time.sleep(0.1)
+                targetValue = self.__fromPwmToValueDriver.getTargetValue(self.__NEUTRAL_TARGET_PWM)
+                self.__ESCChannel.duty_cycle = targetValue
+                time.sleep(0.1)
 
-            pwm = self.__fromSpeedToPwm.getTargetValue(force)
+            pwm = self.__fromSpeedToForward.getTargetValue(targetSpeed)
+            pwm = self.__NEUTRAL_TARGET_PWM + pwm
+            targetValue = self.__fromPwmToValueDriver.getTargetValue(pwm)
+            self.__ESCChannel.duty_cycle = targetValue
+            self.wasReverse = True
+            self.wasBraking = False
+        else:
+            self.setNeutral()
+
+    def brake(self, force : int):
+        if self.__validSpeed(force) and force > 0:
+            if not self.wasBraking:
+                targetValue = self.__fromPwmToValueDriver.getTargetValue(self.__NEUTRAL_TARGET_PWM - self.__PWM_THRESHOLD)
+                self.__ESCChannel.duty_cycle = targetValue
+                time.sleep(0.1)
+
+            pwm = self.__fromSpeedToForward.getTargetValue(force)
+            pwm = self.__NEUTRAL_TARGET_PWM + pwm
             targetValue = self.__fromPwmToValueDriver.getTargetValue(pwm)
             self.__ESCChannel.duty_cycle = targetValue
 
-            if force > 0:
-                self.wasBraking = True
-            else:
-                self.wasBraking = False
+            self.wasBraking = True
+        else:
+            self.setNeutral()
 
     def setNeutral(self):
         targetValue = self.__fromPwmToValueDriver.getTargetValue(self.__NEUTRAL_TARGET_PWM)
         self.__ESCChannel.duty_cycle = targetValue
+        self.wasBraking = False
+        self.wasReverse = False
 
     def __del__(self):
         self.setNeutral()

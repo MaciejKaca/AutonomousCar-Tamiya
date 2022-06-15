@@ -21,7 +21,7 @@ def get_controller(x):
     print("no joysticks connected")
     return None
   elif x < count:
-    return Xcontroller(pygame.joystick.Joystick(x), 0.12)
+    return Xcontroller(pygame.joystick.Joystick(x), 0.05)
   else:
     print("Joystick " + str(x) + " not connected")
     print("choose joystic from 0 to " + str(count -1))
@@ -53,7 +53,7 @@ class Xcontroller:
   def r_x(self):
     for event in pygame.event.get():
       None
-    return (self.axis_deadzone(self.controller.get_axis(2)))
+    return (self.axis_deadzone(self.controller.get_axis(4)))
   def r_y(self):
     for event in pygame.event.get():
       None
@@ -64,7 +64,7 @@ class Xcontroller:
   def l_t(self):
     for event in pygame.event.get():
       None
-    return (self.axis_deadzone(self.controller.get_axis(4)))
+    return (self.axis_deadzone(self.controller.get_axis(2)))
   def r_t(self):
     for event in pygame.event.get():
       None
@@ -155,23 +155,16 @@ pad1 = get_controller(0)
 wheel = Wheel()
 esc = ESC()
 
-esc.setSpeed(0)
+esc.setSpeedForward(0)
 wheel.setAngle(0)
 
 fromXtoSpeed = Converter(-100, 100, esc.MIN_SPEED, esc.MAX_SPEED)
-fromXtoAngle = Converter(-100, 100, wheel.MIN_ANGLE, wheel.MIN_ANGLE)
-
+fromXtoAngle = Converter(-100, 100, wheel.MIN_ANGLE, wheel.MAX_ANGLE)
 
 while True:
-  
-  esc.setSpeed(fromXtoSpeed.getTargetValue(pad1.r_t()))
+  #print(fromXtoSpeed.getTargetValue(pad1.r_t()))
+  #esc.setSpeedForward(fromXtoSpeed.getTargetValue(pad1.r_t())) 
+  esc.setSpeedBackward(fromXtoSpeed.getTargetValue(pad1.l_t()))
   wheel.setAngle(fromXtoAngle.getTargetValue(pad1.l_x()))
 
-  print("X: " + str(pad1.l_x()) + " Y: " + str(pad1.l_y()))
-  print("X: " + str(pad1.r_x()) + " Y: " + str(pad1.r_y()))
-  print ("LT: " + str(pad1.l_t()) + " RT: " + str(pad1.r_t()))
-  print ("up: " + str(pad1.h_u()) + " down: " + str(pad1.h_d()) + " left: " + str(pad1.h_l()) + " right: " + str(pad1.h_r()) )
-  print ("A: " + str(pad1.b_a()) + " B: " + str(pad1.b_b()) + " X: " + str(pad1.b_x()) + " Y: " + str(pad1.b_y()) )
-  print ("START: " + str(pad1.b_start()) + " BACK: " + str(pad1.b_back()) + " XBOX: " + str(pad1.b_xbox()))
-  print ("LEFT: " + str(pad1.b_l()) + " RIGHT: " + str(pad1.b_r()))
   clock.tick(10)
