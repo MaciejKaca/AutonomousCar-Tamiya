@@ -56,16 +56,19 @@ class ESC(metaclass=ESCMeta):
             targetValue = self.__fromPwmToValueDriver.getTargetValue(pwm)
             self.__ESCChannel.duty_cycle = targetValue
             self.wasBraking = False
+            self.wasReverse = False
 
     def setSpeedBackward(self, targetSpeed : int):
         if self.__validSpeed(targetSpeed) and targetSpeed > 0:
             if not self.wasReverse:
-                targetValue = self.__fromPwmToValueDriver.getTargetValue(self.__NEUTRAL_TARGET_PWM + self.__PWM_THRESHOLD)
+                pwm = self.__NEUTRAL_TARGET_PWM + self.__PWM_THRESHOLD + 50
+                targetValue = self.__fromPwmToValueDriver.getTargetValue(pwm)
                 self.__ESCChannel.duty_cycle = targetValue
-                time.sleep(0.1)
+                time.sleep(0.05)
+                pwm = self.__NEUTRAL_TARGET_PWM
                 targetValue = self.__fromPwmToValueDriver.getTargetValue(self.__NEUTRAL_TARGET_PWM)
                 self.__ESCChannel.duty_cycle = targetValue
-                time.sleep(0.1)
+                time.sleep(0.05)
 
             pwm = self.__fromSpeedToForward.getTargetValue(targetSpeed)
             pwm = self.__NEUTRAL_TARGET_PWM + pwm
@@ -96,7 +99,6 @@ class ESC(metaclass=ESCMeta):
         targetValue = self.__fromPwmToValueDriver.getTargetValue(self.__NEUTRAL_TARGET_PWM)
         self.__ESCChannel.duty_cycle = targetValue
         self.wasBraking = False
-        self.wasReverse = False
 
     def __del__(self):
         self.setNeutral()
