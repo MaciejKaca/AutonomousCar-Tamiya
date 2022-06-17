@@ -33,7 +33,7 @@ class Wheel(metaclass=WheelMeta):
         pass
 
     def __validateAngle(self, angle: int) -> bool:
-        if self.MIN_ANGLE <= angle and angle <= self.MAX_ANGLE:
+        if self.__angle != angle and self.MIN_ANGLE <= angle and angle <= self.MAX_ANGLE:
             return True
         else:
             return False

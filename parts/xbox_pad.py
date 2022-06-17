@@ -27,7 +27,7 @@ def get_controller(x):
     print("no joysticks connected")
     return None
   elif x < count:
-    return Xcontroller(pygame.joystick.Joystick(x), 0.05)
+    return Xcontroller(pygame.joystick.Joystick(x))
   else:
     print("Joystick " + str(x) + " not connected")
     print("choose joystic from 0 to " + str(count -1))
@@ -35,9 +35,6 @@ def get_controller(x):
 
 class Xcontroller:
     __keepRunning = True
-
-    __fromXtoSpeed = Converter(-100, 100, ESC.MIN_SPEED, ESC.MAX_SPEED)
-    __fromXtoAngle = Converter(-100, 100, Wheel.MIN_ANGLE, Wheel.MAX_ANGLE)
 
     __wheel = Wheel()
     __esc = ESC()
@@ -54,6 +51,13 @@ class Xcontroller:
     __AXIS_MAX_VALUE = int(100)
     __AXIS_MIN_VALUE = int(-100)
 
+    __axis_deadzone = 0.4
+    __trigger_deadzone = 0.2
+
+    __fromXtoSpeed = Converter(__AXIS_MIN_VALUE, __AXIS_MAX_VALUE, ESC.MIN_SPEED, ESC.MAX_SPEED)
+    __fromXtoAngle = Converter(__AXIS_MIN_VALUE, __AXIS_MAX_VALUE, Wheel.MIN_ANGLE, Wheel.MAX_ANGLE)
+    __fromXtoAxis = Converter(-1 + __trigger_deadzone, 1, __AXIS_MIN_VALUE, __AXIS_MAX_VALUE)
+
     __BUTTON_DOWN = True
     __BUTTON_UP = False
 
@@ -62,10 +66,9 @@ class Xcontroller:
 
     __keepRunning_mutex = Lock()
 
-    def __init__(self, controller, deadzone):
+    def __init__(self, controller):
         self.__controller = controller
         self.__controller.init()
-        self.__deadzone = deadzone
         self.__pad_thread = threading.Thread(target=self.__handle_events, args=(), daemon=True)
         self.__pad_thread.start()
 
@@ -74,29 +77,31 @@ class Xcontroller:
         self.__pad_thread.join()
         self.__esc.setNeutral()
 
-    def __axis_deadzone(self, x):
+    def __get_trigger_value(self, x):
+        if x > -1.0 + self.__trigger_deadzone:
+            return self.__fromXtoAxis.getTargetValue(x)
+        return self.__AXIS_MIN_VALUE
+        # if x < 0:
+        #     return int(round((1 * min(0, x + self.__deadzone)) / (1 - self.__deadzone) * 100))
+        # return int(round((1 * max(0, x - self.__deadzone)) / (1 - self.__deadzone) * 100))
+
+    def __get_axis_value(self, x):
         if x < 0:
-            return int(round((1 * min(0, x + self.__deadzone)) / (1 - self.__deadzone) * 100))
-        return int(round((1 * max(0, x - self.__deadzone)) / (1 - self.__deadzone) * 100))
-
-    def __trigger_deadzone (x):
-        return  int(round((x + 1) / 2 * 100))
-
-    def __get_axis_value(self, value):
-        return (self.__axis_deadzone(value))
+            return int(round((1 * min(0, x + self.__axis_deadzone)) / (1 - self.__axis_deadzone) * 100))
+        return int(round((1 * max(0, x - self.__axis_deadzone)) / (1 - self.__axis_deadzone) * 100))
 
     def __handle_triggers(self):
         left_trigger_value = int(self.__axis_state.get(self.__LEFT_TRIGGER))
         right_trigger_value = int(self.__axis_state.get(self.__RIGHT_TRIGGER))
 
         if left_trigger_value > self.__AXIS_MIN_VALUE:
-            speed = self.__fromXtoSpeed.getTargetValue(left_trigger_value)
+            speed = int(self.__fromXtoSpeed.getTargetValue(left_trigger_value))
             if bool(self.__button_state.get(self.__LEFT_BUTTON)):
                 self.__esc.setSpeedBackward(speed)
             else:
                 self.__esc.brake(speed)
         else:
-            speed = self.__fromXtoSpeed.getTargetValue(right_trigger_value)
+            speed = int(self.__fromXtoSpeed.getTargetValue(right_trigger_value))
             self.__esc.setSpeedForward(speed)
 
     def __handle_axis(self):
@@ -131,12 +136,19 @@ class Xcontroller:
                     self.__axis_state[axis] = value
                     
                     if axis == self.__LEFT_TRIGGER or axis == self.__RIGHT_TRIGGER:
+                        value = self.__get_trigger_value(axis_value)
+                        self.__axis_state[axis] = value
+
                         self.__handle_triggers()
                     else:
-                        self.__handle_axis()
+                        if axis == self.__LEFT_AXIS:
+                            value = self.__get_axis_value(axis_value)
+                            self.__axis_state[axis] = value
+
+                            self.__handle_axis()
                 else:
                     button = event.__dict__.get('button')
                     isPressed = (event.type == self.__BUTTON_DOWN_EVENT)
                     self.__button_state[button] = bool(isPressed)
                     self.__handle_button(event)
-            time.sleep(0.05) #100ms
+            time.sleep(0.01) #10ms
