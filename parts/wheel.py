@@ -27,7 +27,7 @@ class Wheel(metaclass=WheelMeta):
     MAX_ANGLE = int((__MAX_ANGLE-__MIN_ANGLE)/2)
     MIN_ANGLE = int(-MAX_ANGLE)
 
-    angleToServoAngle = Converter(MIN_ANGLE, MAX_ANGLE, __MIN_ANGLE, __MAX_ANGLE)
+    __angleToServoAngle = Converter(MIN_ANGLE, MAX_ANGLE, __MIN_ANGLE, __MAX_ANGLE)
 
     def __init__(self):
         pass
@@ -58,13 +58,9 @@ class Wheel(metaclass=WheelMeta):
     def goStraight(self):
         self.__setAngle(0)
 
-    def __convertAngle(self, angle: int):
-        middle = self.__MIN_ANGLE + ((self.__MAX_ANGLE - self.__MIN_ANGLE) / 2)
-        scale = (self.__MAX_ANGLE - self.__MIN_ANGLE) / (self.MAX_ANGLE - self.MIN_ANGLE)
-        return (self.__MIDDLE_ANGLE + (angle * scale))
-
     def __setAngle(self, angle: int):
         if self.__validateAngle(angle):
-            converted = self.angleToServoAngle.getTargetValue(angle)
+            converted = self.__angleToServoAngle.getTargetValue(angle)
             if self.__validateTargetAngle(converted):
+                self.__angle = converted
                 self.__wheelServo.angle = converted

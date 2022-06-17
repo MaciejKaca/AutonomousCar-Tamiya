@@ -6,13 +6,10 @@ from adafruit_pca9685 import PCAChannels
 
 class PWMDriverMeta(type):
     _instances = {}
-
     def __call__(cls, *args, **kwargs):
         if cls not in cls._instances:
-            instance = super().__call__(*args, **kwargs)
-            cls._instances[cls] = instance
+            cls._instances[cls] = super(PWMDriverMeta, cls).__call__(*args, **kwargs)
         return cls._instances[cls]
-
 
 class PWMDriver(metaclass=PWMDriverMeta):
     __i2c = busio.I2C(SCL, SDA)

@@ -99,6 +99,3 @@ class ESC(metaclass=ESCMeta):
         targetValue = self.__fromPwmToValueDriver.getTargetValue(self.__NEUTRAL_TARGET_PWM)
         self.__ESCChannel.duty_cycle = targetValue
         self.wasBraking = False
-
-    def __del__(self):
-        self.setNeutral()

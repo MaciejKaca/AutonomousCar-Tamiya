@@ -8,6 +8,7 @@ import atexit
 
 from parts.esc import ESC
 from parts.wheel import Wheel
+from parts.pwm_driver import PWMDriver
 from utils.conversion import Converter
 import parts.xbox_pad as Xbox
 
@@ -17,15 +18,12 @@ clock = pygame.time.Clock()
 import time
 
 pad1 = Xbox.get_controller(0)
+pwm_driver = PWMDriver()
 wheel = Wheel()
 esc = ESC()
 
 esc.setSpeedForward(0)
 wheel.setAngle(0)
 
-fromXtoSpeed = Converter(-100, 100, esc.MIN_SPEED, esc.MAX_SPEED)
-fromXtoAngle = Converter(-100, 100, wheel.MIN_ANGLE, wheel.MAX_ANGLE)
-
-while True:
+while not pad1.was_exit_pressed():
   time.sleep(1)
-  clock.tick(10)
