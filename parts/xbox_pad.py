@@ -139,4 +139,4 @@ class Xcontroller:
                     isPressed = (event.type == self.__BUTTON_DOWN_EVENT)
                     self.__button_state[button] = bool(isPressed)
                     self.__handle_button(event)
-        time.sleep(0.1) #100ms
+            time.sleep(0.05) #100ms
