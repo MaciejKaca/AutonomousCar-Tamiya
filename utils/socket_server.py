@@ -16,17 +16,17 @@ class CarSocketMeta(type):
         return cls._instances[cls]
 
 class CarSocket(metaclass=CarSocketMeta):
-    __localIP     = "192.168.0.115"
-    __localPort   = 5555
-    __bufferSize  = 1024
-    __UDPServerSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
-    __UDPServerSocket.bind((__localIP, __localPort))
-    __client_address = ""
-    __UDPServerSocket.settimeout(10)
-    __isConnected = False
-    __message_queue = queue.Queue()
-
     def __init__(self) -> None:
+        self.__localIP     = "192.168.0.115"
+        self.__localPort   = 5555
+        self.__bufferSize  = 1024
+        self.__UDPServerSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
+        self.__UDPServerSocket.bind((self.__localIP, self.__localPort))
+        self.__client_address = ""
+        self.__UDPServerSocket.settimeout(10)
+        self.__isConnected = False
+        self.__message_queue = queue.Queue()
+
         self.__init_conection()
         
         if self.__isConnected:
