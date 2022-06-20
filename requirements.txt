@@ -4,3 +4,4 @@ evdev
 xbox360controller
 platformdirs
 matplotlib
+pyzmq
