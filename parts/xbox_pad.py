@@ -34,39 +34,39 @@ def get_controller(x):
     return None  
 
 class Xcontroller:
-    __keepRunning = True
-
-    __wheel = Wheel()
-    __esc = ESC()
-
-    __RIGHT_TRIGGER = 5
-    __LEFT_TRIGGER = 2
-    __AXIS_EVENT = 7
-    __BUTTON_UP_EVENT = 11
-    __BUTTON_DOWN_EVENT = 10
-    __LEFT_BUTTON = 4
-    __LEFT_AXIS = 0
-    __START_BUTTON = 7
-
-    __AXIS_MAX_VALUE = int(100)
-    __AXIS_MIN_VALUE = int(-100)
-
-    __axis_deadzone = 0.4
-    __trigger_deadzone = 0.2
-
-    __fromXtoSpeed = Converter(__AXIS_MIN_VALUE, __AXIS_MAX_VALUE, ESC.MIN_SPEED, ESC.MAX_SPEED)
-    __fromXtoAngle = Converter(__AXIS_MIN_VALUE, __AXIS_MAX_VALUE, Wheel.MIN_ANGLE, Wheel.MAX_ANGLE)
-    __fromXtoAxis = Converter(-1 + __trigger_deadzone, 1, __AXIS_MIN_VALUE, __AXIS_MAX_VALUE)
-
-    __BUTTON_DOWN = True
-    __BUTTON_UP = False
-
-    __axis_state = {__LEFT_AXIS : __AXIS_MIN_VALUE, __RIGHT_TRIGGER : __AXIS_MIN_VALUE, __LEFT_TRIGGER : __AXIS_MIN_VALUE}
-    __button_state = {__LEFT_BUTTON : __BUTTON_UP}
-
-    __keepRunning_mutex = Lock()
-
     def __init__(self, controller):
+        self.__wheel = Wheel()
+        self.__esc = ESC()
+
+        self.__keepRunning = True
+
+        self.__RIGHT_TRIGGER = 5
+        self.__LEFT_TRIGGER = 2
+        self.__AXIS_EVENT = 7
+        self.__BUTTON_UP_EVENT = 11
+        self.__BUTTON_DOWN_EVENT = 10
+        self.__LEFT_BUTTON = 4
+        self.__LEFT_AXIS = 0
+        self.__START_BUTTON = 7
+
+        self.__AXIS_MAX_VALUE = int(100)
+        self.__AXIS_MIN_VALUE = int(-100)
+
+        self.__axis_deadzone = 0.4
+        self.__trigger_deadzone = 0.2
+
+        self.__fromXtoSpeed = Converter(self.__AXIS_MIN_VALUE, self.__AXIS_MAX_VALUE, ESC.MIN_SPEED, ESC.MAX_SPEED)
+        self.__fromXtoAngle = Converter(self.__AXIS_MIN_VALUE, self.__AXIS_MAX_VALUE, Wheel.MIN_ANGLE, Wheel.MAX_ANGLE)
+        self.__fromXtoAxis = Converter(-1 + self.__trigger_deadzone, 1, self.__AXIS_MIN_VALUE, self.__AXIS_MAX_VALUE)
+
+        self.__BUTTON_DOWN = True
+        self.__BUTTON_UP = False
+
+        self.__axis_state = {self.__LEFT_AXIS : self.__AXIS_MIN_VALUE, self.__RIGHT_TRIGGER : self.__AXIS_MIN_VALUE, self.__LEFT_TRIGGER : self.__AXIS_MIN_VALUE}
+        self.__button_state = {self.__LEFT_BUTTON : self.__BUTTON_UP}
+
+        self.__keepRunning_mutex = Lock()
+        
         self.__controller = controller
         self.__controller.init()
         self.__pad_thread = threading.Thread(target=self.__handle_events, args=(), daemon=True)
@@ -81,9 +81,6 @@ class Xcontroller:
         if x > -1.0 + self.__trigger_deadzone:
             return self.__fromXtoAxis.getTargetValue(x)
         return self.__AXIS_MIN_VALUE
-        # if x < 0:
-        #     return int(round((1 * min(0, x + self.__deadzone)) / (1 - self.__deadzone) * 100))
-        # return int(round((1 * max(0, x - self.__deadzone)) / (1 - self.__deadzone) * 100))
 
     def __get_axis_value(self, x):
         if x < 0:

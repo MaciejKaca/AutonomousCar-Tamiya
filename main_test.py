@@ -9,9 +9,10 @@ import atexit
 from parts.esc import ESC
 from parts.wheel import Wheel
 from parts.pwm_driver import PWMDriver
-from utils.conversion import Converter
 import parts.xbox_pad as Xbox
 
+from utils.socket_server import CarSocket
+from utils.messages import *
 
 clock = pygame.time.Clock()
 

@@ -14,23 +14,25 @@ class WheelMeta(type):
 
 
 class Wheel(metaclass=WheelMeta):
-    __SERVO_CHANNEL_ID = 0
-    __pwmDriver = PWMDriver()
-    __wheelServo = servo.Servo(__pwmDriver.getChannel(__SERVO_CHANNEL_ID))
-    __angle = int(0)
-
-    _STEERING_ANGLE = int(50)
+    __STEERING_ANGLE = int(50)
     __MIDDLE_ANGLE = int(78)
-    __MIN_ANGLE = int(__MIDDLE_ANGLE - _STEERING_ANGLE)
-    __MAX_ANGLE = int(__MIDDLE_ANGLE + _STEERING_ANGLE)
+
+    __MIN_ANGLE = int(__MIDDLE_ANGLE - __STEERING_ANGLE)
+    __MAX_ANGLE = int(__MIDDLE_ANGLE + __STEERING_ANGLE)
 
     MAX_ANGLE = int((__MAX_ANGLE-__MIN_ANGLE)/2)
     MIN_ANGLE = int(-MAX_ANGLE)
 
-    __angleToServoAngle = Converter(MIN_ANGLE, MAX_ANGLE, __MIN_ANGLE, __MAX_ANGLE)
-
     def __init__(self):
-        pass
+        self.__SERVO_CHANNEL_ID = 0
+        self.__pwmDriver = PWMDriver()
+        self.__wheelServo = servo.Servo(self.__pwmDriver.getChannel(self.__SERVO_CHANNEL_ID))
+        self.__angle = int(0)
+
+        self.__STEERING_ANGLE = int(50)
+        self.__MIDDLE_ANGLE = int(78)
+
+        self.__angleToServoAngle = Converter(self.MIN_ANGLE, self.MAX_ANGLE, self.__MIN_ANGLE, self.__MAX_ANGLE)
 
     def __validateAngle(self, angle: int) -> bool:
         if self.__angle != angle and self.MIN_ANGLE <= angle and angle <= self.MAX_ANGLE:

@@ -2,6 +2,9 @@ from utils.conversion import Converter
 from parts.pwm_driver import PWMDriver
 import time
 
+from utils.socket_server import CarSocket
+from utils.messages import *
+
 class ESCMeta(type):
     _instances = {}
 
@@ -13,38 +16,42 @@ class ESCMeta(type):
 
 
 class ESC(metaclass=ESCMeta):
-    __pwmDriver = PWMDriver()
-    __ESC_CHANNEL_ID = 3
-
-    __MIN_PWM_VALUE = int(0)
-    __MAX_PWM_VALUE = int(10000)
-
-    __MIN_PWM_DRIVER_VALUE = 0x0000
-    __MAX_PWM_DRIVER_VALUE = 0xFFFF
-
     __MIN_TARGET_PWM = int(1000)
     __MAX_TARGET_PWM = int(2000)
-    __NEUTRAL_TARGET_PWM = int(1500)
-    __PWM_THRESHOLD = int(40)
-    __PWM_TARGET_FOR_EACH_SIDE = (__MAX_TARGET_PWM-__MIN_TARGET_PWM)/2
 
     MAX_SPEED = int((__MAX_TARGET_PWM-__MIN_TARGET_PWM)/2)
     MIN_SPEED = int(0)
 
-    __ESCChannel = __pwmDriver.getChannel(__ESC_CHANNEL_ID)
-
-    __fromSpeedToForward = Converter(MIN_SPEED, MAX_SPEED, 0, __PWM_TARGET_FOR_EACH_SIDE)
-    __fromSpeedToBackward= Converter(MIN_SPEED, MAX_SPEED, 0, __PWM_TARGET_FOR_EACH_SIDE)
-    __fromPwmToValueDriver = Converter(__MIN_PWM_VALUE, __MAX_PWM_VALUE, __MIN_PWM_DRIVER_VALUE, __MAX_PWM_DRIVER_VALUE)
-
-    wasBraking = False
-    wasReverse = False
-
     def __init__(self):
-        pass
+        self.__pwmDriver = PWMDriver()
+        self.__ESC_CHANNEL_ID = 3
+
+        self.__MIN_PWM_VALUE = int(0)
+        self.__MAX_PWM_VALUE = int(10000)
+
+        self.__MIN_PWM_DRIVER_VALUE = 0x0000
+        self.__MAX_PWM_DRIVER_VALUE = 0xFFFF
+
+        self.__NEUTRAL_TARGET_PWM = int(1500)
+        self.__PWM_THRESHOLD = int(40)
+        self.__PWM_TARGET_FOR_EACH_SIDE = (self.__MAX_TARGET_PWM - self.__MIN_TARGET_PWM)/2
+
+        self.__ESCChannel = self.__pwmDriver.getChannel(self.__ESC_CHANNEL_ID)
+
+        self.__fromSpeedToForward = Converter(self.MIN_SPEED, self.MAX_SPEED, 0, self.__PWM_TARGET_FOR_EACH_SIDE)
+        self.__fromSpeedToBackward= Converter(self.MIN_SPEED, self.MAX_SPEED, 0, self.__PWM_TARGET_FOR_EACH_SIDE)
+        self.__fromPwmToValueDriver = Converter(self.__MIN_PWM_VALUE, self.__MAX_PWM_VALUE, self.__MIN_PWM_DRIVER_VALUE, self.__MAX_PWM_DRIVER_VALUE)
+
+        self.__was_braking = False
+        self.__was_reverse = False
+
+        self.__sock = CarSocket()
 
     def __validSpeed(self, targetSpeed : int):
         if self.MIN_SPEED <= targetSpeed and targetSpeed <= self.MAX_SPEED:
+            speedData = SpeedData()
+            speedData.speed = targetSpeed
+            self.__sock.add_to_queue(speedData)
             return True
         else:
             return False
@@ -55,12 +62,12 @@ class ESC(metaclass=ESCMeta):
             pwm = self.__NEUTRAL_TARGET_PWM - pwm
             targetValue = self.__fromPwmToValueDriver.getTargetValue(pwm)
             self.__ESCChannel.duty_cycle = int(targetValue)
-            self.wasBraking = False
-            self.wasReverse = False
+            self.__was_braking = False
+            self.__was_reverse = False
 
     def setSpeedBackward(self, targetSpeed : int):
         if self.__validSpeed(targetSpeed) and targetSpeed > 0:
-            if not self.wasReverse:
+            if not self.__was_reverse:
                 pwm = self.__NEUTRAL_TARGET_PWM + self.__PWM_THRESHOLD + 50
                 targetValue = self.__fromPwmToValueDriver.getTargetValue(pwm)
                 self.__ESCChannel.duty_cycle = int(targetValue)
@@ -74,14 +81,14 @@ class ESC(metaclass=ESCMeta):
             pwm = self.__NEUTRAL_TARGET_PWM + pwm
             targetValue = self.__fromPwmToValueDriver.getTargetValue(pwm)
             self.__ESCChannel.duty_cycle = int(targetValue)
-            self.wasReverse = True
-            self.wasBraking = False
+            self.__was_reverse = True
+            self.__was_braking = False
         else:
             self.setNeutral()
 
     def brake(self, force : int):
         if self.__validSpeed(force) and force > 0:
-            if not self.wasBraking:
+            if not self.__was_braking:
                 targetValue = self.__fromPwmToValueDriver.getTargetValue(self.__NEUTRAL_TARGET_PWM - self.__PWM_THRESHOLD)
                 self.__ESCChannel.duty_cycle = int(targetValue)
                 time.sleep(0.1)
@@ -91,12 +98,12 @@ class ESC(metaclass=ESCMeta):
             targetValue = self.__fromPwmToValueDriver.getTargetValue(pwm)
             self.__ESCChannel.duty_cycle = int(targetValue)
 
-            self.wasBraking = True
-            self.wasReverse = False
+            self.__was_braking = True
+            self.__was_reverse = False
         else:
             self.setNeutral()
 
     def setNeutral(self):
         targetValue = self.__fromPwmToValueDriver.getTargetValue(self.__NEUTRAL_TARGET_PWM)
         self.__ESCChannel.duty_cycle = targetValue
-        self.wasBraking = False
+        self.__was_braking = False
