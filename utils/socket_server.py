@@ -1,8 +1,5 @@
 import socket
 import queue, threading
-from threading import Condition
-import json
-import time
 
 from utils.messages import DataMessage
 

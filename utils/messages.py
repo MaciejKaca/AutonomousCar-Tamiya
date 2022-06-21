@@ -1,8 +1,5 @@
 from enum import Enum
-import json
 import time
-
-from numpy import str0
 
 class MessageType(Enum):
     NULL = 1
@@ -14,6 +11,11 @@ class MessageFields(Enum):
     MESSAGE_TYPE = 1
     SENT_TYIME = 2
     DATA = 3
+
+class Direction(Enum):
+    FORWARD = 1
+    BACKWARD = 2
+    BRAKE = 3
 
 class DataMessage:
     def __init__(self):
@@ -34,16 +36,19 @@ class DataMessage:
 class SpeedData(DataMessage):
     def __init__(self):
         self.speed = 0
+        self.direction = Direction.FORWARD
         self.__MESSAGE_TYPE = MessageType.SPEED
         self.__SENT_TIME = DataMessage.get_time()
 
     def __get_data(self):
         data = {}
         data['speed'] = self.speed
+        data['direction'] = self.direction.value
         return data
 
     def __set_data(self, data : dict):
         self.speed = int(data.get('speed'))
+        self.direction = Direction(int(data.get('direction')))
 
     def serialize(self) -> str:
         data = self.__get_data()
