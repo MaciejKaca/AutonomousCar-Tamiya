@@ -15,8 +15,8 @@ class CarSocketMeta(type):
 
 class CarSocket(metaclass=CarSocketMeta):
     def __init__(self) -> None:
-        self.__is_server = True
-        self.__localIP     = "192.168.0.115"
+        self.__is_server = False
+        self.__localIP     = "192.168.0.53"
         self.__localPort   = 5555
         self.__bufferSize  = 1024
         self.__UDPSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
@@ -30,9 +30,9 @@ class CarSocket(metaclass=CarSocketMeta):
         
         if self.__isConnected:
             if self.__is_server:
-                self.__socket_thread = threading.Thread(target=self.__send, args=(), daemon=True)
-            else:
                 self.__socket_thread = threading.Thread(target=self.__recv, args=(), daemon=True)
+            else:
+                self.__socket_thread = threading.Thread(target=self.__send, args=(), daemon=True)
             self.__socket_thread.start()
 
     def __del__(self):
@@ -50,6 +50,7 @@ class CarSocket(metaclass=CarSocketMeta):
                 print("Connected to: ", self.__partner_address)
                 self.__isConnected = True
             else:
+                print("Seind Hello to :", (self.__partner_address, self.__localPort))
                 bytesToSend = str.encode("Hello")
                 self.__UDPSocket.sendto(bytesToSend, (self.__partner_address, self.__localPort))
                 self.__isConnected = True
@@ -73,7 +74,7 @@ class CarSocket(metaclass=CarSocketMeta):
         while self.__isConnected:
             message = self.__message_send_queue.get()
             bytesToSend = str.encode(message)
-            self.__UDPSocket.sendto(bytesToSend, self.__partner_address)
+            self.__UDPSocket.sendto(bytesToSend, (self.__partner_address, self.__localPort))
     
     def __recv(self):
         while self.__isConnected:

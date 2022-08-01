@@ -122,3 +122,14 @@ class ESC(metaclass=ESCMeta):
         speedData.speed = speed
         speedData.direction = direction
         self.__sock.add_to_queue(speedData)
+
+        if direction == Direction.BRAKE:
+            speedData = SpeedData()
+            speedData.speed = 0
+            speedData.direction = Direction.FORWARD
+            self.__sock.add_to_queue(speedData)
+        else:
+            speedData = SpeedData()
+            speedData.speed = 0
+            speedData.direction = Direction.BRAKE
+            self.__sock.add_to_queue(speedData)
