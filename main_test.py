@@ -2,10 +2,10 @@ from parts.esc import ESC
 from parts.wheel import Wheel
 from parts.pwm_driver import PWMDriver
 from parts.steamdeck_input import SteamdeckInput
-import  autonomousCarConnection.connection as ClientSocket
+from utils.connection import Connection
 import time
 
-clientSocket = ClientSocket.Connection(is_server=False)
+clientSocket = Connection()
 input = SteamdeckInput()
 pwm_driver = PWMDriver()
 wheel = Wheel()

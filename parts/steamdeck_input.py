@@ -21,11 +21,12 @@ class SteamdeckInput(metaclass=SteamdeckInputMeta):
 
         self.__keepRunning = True
 
+        self.__AXIS_EVENT = 1536
+        self.__BUTTON_UP_EVENT = 1540
+        self.__BUTTON_DOWN_EVENT = 1539
+
         self.__RIGHT_TRIGGER = 5
         self.__LEFT_TRIGGER = 2
-        self.__AXIS_EVENT = 7
-        self.__BUTTON_UP_EVENT = 11
-        self.__BUTTON_DOWN_EVENT = 10
         self.__LEFT_BUTTON = 4
         self.__LEFT_AXIS = 0
         self.__START_BUTTON = 7
@@ -106,7 +107,8 @@ class SteamdeckInput(metaclass=SteamdeckInputMeta):
 
     def __handle_events(self):
         while not self.was_exit_pressed():
-            event = JoystickData(self.__event_queue.get())
+
+            event : JoystickData = self.__event_queue.get()
             if event.event_type == self.__AXIS_EVENT:
                 axis = event.axis
                 axis_value = event.value
