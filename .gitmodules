@@ -1,0 +1,3 @@
+[submodule "autonomousCarConnection"]
+	path = autonomousCarConnection
+	url = git@github.com:MaciejKaca/autonomousCarConnection.git
