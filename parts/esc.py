@@ -2,9 +2,9 @@ from utils.conversion import Converter
 from parts.pwm_driver import PWMDriver
 import time
 
-from utils.socket_server import CarSocket
-from utils.messages import SpeedData
-from utils.messages import Direction
+# from utils.socket_server import CarSocket
+from autonomousCarConnection.messages import SpeedData
+from autonomousCarConnection.messages import Direction
 
 class ESCMeta(type):
     _instances = {}
@@ -44,7 +44,7 @@ class ESC(metaclass=ESCMeta):
         self.__was_braking = False
         self.__was_reverse = False
 
-        self.__sock = CarSocket()
+        # self.__sock = CarSocket()
 
         self.__speed = (Direction.FORWARD, 0)
 
@@ -118,18 +118,18 @@ class ESC(metaclass=ESCMeta):
         self.__speed = (direction, speed)
         self.__ESCChannel.duty_cycle = int(targetValue)
 
-        speedData = SpeedData()
-        speedData.speed = speed
-        speedData.direction = direction
-        self.__sock.add_to_queue(speedData)
+        # speedData = SpeedData()
+        # speedData.speed = speed
+        # speedData.direction = direction
+        # self.__sock.add_to_queue(speedData)
 
-        if direction == Direction.BRAKE:
-            speedData = SpeedData()
-            speedData.speed = 0
-            speedData.direction = Direction.FORWARD
-            self.__sock.add_to_queue(speedData)
-        else:
-            speedData = SpeedData()
-            speedData.speed = 0
-            speedData.direction = Direction.BRAKE
-            self.__sock.add_to_queue(speedData)
+        # if direction == Direction.BRAKE:
+        #     speedData = SpeedData()
+        #     speedData.speed = 0
+        #     speedData.direction = Direction.FORWARD
+        #     self.__sock.add_to_queue(speedData)
+        # else:
+        #     speedData = SpeedData()
+        #     speedData.speed = 0
+        #     speedData.direction = Direction.BRAKE
+        #     self.__sock.add_to_queue(speedData)
