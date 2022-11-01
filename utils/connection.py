@@ -2,7 +2,6 @@ import socket
 import queue, threading
 from threading import Lock
 from typing import List
-from parts.steamdeck_input import SteamdeckInput
 from autonomousCarConnection.messages import DataMessage, Heartbeat, JoystickData, deserialize_message, MessageType
 import time
 
@@ -28,7 +27,6 @@ class Connection(metaclass=ConnectionMeta):
         self.__isConnected = False
         self.__message_send_queue = queue.Queue()
         self.__message_recv_queue = queue.Queue()
-        self.__joystick = SteamdeckInput()
         self.__keep_running = True
         self.__last_hearbeat_time = 0
         self.__HEARTBEAT_TIMEOUT = 2000 # 2 seconds
@@ -46,6 +44,8 @@ class Connection(metaclass=ConnectionMeta):
         self.__hearbeat_thread.start()
         self.__monitor_hearbeat_thread.start()
 
+        self.incoming_joystick_queue = queue.Queue()
+
     def __del__(self):
         if self.__isConnected:
             self.__UDPSocket.close()
@@ -58,7 +58,7 @@ class Connection(metaclass=ConnectionMeta):
 
     def add_to_queue(self, message : DataMessage):
         self.__message_send_queue.put(message.serialize())
-    
+
     def get_data(self) -> List[DataMessage]:
         data_list = []
         while not self.__message_recv_queue.empty():
@@ -81,7 +81,7 @@ class Connection(metaclass=ConnectionMeta):
 
     def __handle_message(self, message : DataMessage):
         if message.message_type == MessageType.JOYSTICK:
-            self.__joystick.add_event(message)
+            self.incoming_joystick_queue.put(message)
         elif message.message_type == MessageType.HEARTBEAT:
             hearbeat : Heartbeat = message
             if hearbeat.system_id == self.__CLIENT_SYSTEM_ID:

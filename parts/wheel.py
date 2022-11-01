@@ -34,6 +34,9 @@ class Wheel(metaclass=WheelMeta):
 
         self.__angleToServoAngle = Converter(self.MIN_ANGLE, self.MAX_ANGLE, self.__MIN_ANGLE, self.__MAX_ANGLE)
 
+    def __del__(self):
+        self.setAngle(0)
+
     def __validateAngle(self, angle: int) -> bool:
         if self.__angle != angle and self.MIN_ANGLE <= angle and angle <= self.MAX_ANGLE:
             return True

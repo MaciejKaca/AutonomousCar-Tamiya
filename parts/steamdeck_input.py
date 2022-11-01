@@ -4,6 +4,7 @@ from utils.conversion import Converter
 from autonomousCarConnection.messages import JoystickData
 import threading, queue
 from threading import Lock
+from utils.connection import Connection
 
 class SteamdeckInputMeta(type):
     _instances = {}
@@ -48,8 +49,7 @@ class SteamdeckInput(metaclass=SteamdeckInputMeta):
         self.__button_state = {self.__LEFT_BUTTON : self.__BUTTON_UP}
 
         self.__keepRunning_mutex = Lock()
-
-        self.__event_queue = queue.Queue()
+        self.__socket = Connection()
 
         self.__pad_thread = threading.Thread(target=self.__handle_events, args=(), daemon=True)
         self.__pad_thread.start()
@@ -107,8 +107,8 @@ class SteamdeckInput(metaclass=SteamdeckInputMeta):
 
     def __handle_events(self):
         while not self.was_exit_pressed():
+            event : JoystickData = self.__socket.incoming_joystick_queue.get()
 
-            event : JoystickData = self.__event_queue.get()
             if event.event_type == self.__AXIS_EVENT:
                 axis = event.axis
                 axis_value = event.value
@@ -129,6 +129,3 @@ class SteamdeckInput(metaclass=SteamdeckInputMeta):
                 isPressed = (event.event_type == self.__BUTTON_DOWN_EVENT)
                 self.__button_state[button] = bool(isPressed)
                 self.__handle_button(event)
-
-    def add_event(self, message : JoystickData):
-        self.__event_queue.put(message)
