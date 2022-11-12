@@ -70,7 +70,6 @@ class ESC(metaclass=ESCMeta):
     def setSpeedForward(self, targetSpeed : int):
         if self.__validSpeed(targetSpeed, Direction.FORWARD):
             self.__setPwm(targetSpeed, Direction.FORWARD)
-            self.__sendTelemetry()
 
     def setSpeedBackward(self, targetSpeed : int):
         if self.__validSpeed(targetSpeed, Direction.BACKWARD):
@@ -86,7 +85,6 @@ class ESC(metaclass=ESCMeta):
                     time.sleep(0.05)
 
                 self.__setPwm(targetSpeed, Direction.BACKWARD)
-                self.__sendTelemetry()
             else:
                 self.setNeutral()
 
@@ -119,15 +117,25 @@ class ESC(metaclass=ESCMeta):
 
         self.__speed = Speed(direction, speed)
         self.__ESCChannel.duty_cycle = int(targetValue)
+
+        self.__sendTelemetry()
     
     def __sendTelemetry(self):
         speedData = SpeedData()
+        speedZero = SpeedData()
 
         if self.__speed.direction == Direction.BRAKE:
-            speedData.speed = 0
+            speedData.speed = self.__speed.speed
             speedData.direction = Direction.BRAKE
+
+            speedZero.speed = 0
+            speedZero.direction = Direction.FORWARD
         else:
             speedData.speed = self.__speed.speed
             speedData.direction = self.__speed.direction
 
+            speedZero.speed = 0
+            speedZero.direction = Direction.BRAKE
+
         self.__sock.add_to_queue(speedData)
+        self.__sock.add_to_queue(speedZero)

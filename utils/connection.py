@@ -20,7 +20,7 @@ class Connection(metaclass=ConnectionMeta):
         self.__CLIENT_SYSTEM_ID = 222
         self.__HEARTBEAT_HZ = 1
         self.__UDPSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
-        self.__CLIENT_ADDRESS = "192.168.0.53"
+        self.__CLIENT_ADDRESS = "192.168.0.122"
         self.__CAR_ADDRESS = "192.168.0.115"
         self.__LOCAL_PORT   = 5555
         self.__bufferSize  = 1024
