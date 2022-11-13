@@ -23,7 +23,7 @@ class Converter:
 
     #     return int((self.__TARGET_MAX - ((self.__SOURCE_MAX - number) * self.__SCALE)))
 
-    def __init__(self, source_min : int, source_max : int, target_min : int, target_max : int):
+    def __init__(self, source_min, source_max, target_min, target_max):
         self.__SOURCE_MIN = source_min
         self.__SOURCE_MAX = source_max
 
@@ -32,11 +32,11 @@ class Converter:
 
         self.__SCALE = (self.__TARGET_MAX - self.__TARGET_MIN) / (self.__SOURCE_MAX - self.__SOURCE_MIN)
 
-    def getTargetValue(self, number) -> int:
+    def get_target_value(self, number):
         if number > self.__SOURCE_MAX:
             return self.__TARGET_MAX
 
         if number < self.__SOURCE_MIN:
-            return self.__TARGET_MIN 
+            return self.__TARGET_MIN
 
-        return int((self.__TARGET_MAX - ((self.__SOURCE_MAX - number) * self.__SCALE)))
+        return self.__TARGET_MAX - ((self.__SOURCE_MAX - number) * self.__SCALE)
