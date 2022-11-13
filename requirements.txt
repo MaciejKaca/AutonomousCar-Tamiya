@@ -5,3 +5,4 @@ xbox360controller
 platformdirs
 matplotlib
 pyzmq
+pi-ina219

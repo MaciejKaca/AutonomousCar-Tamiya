@@ -41,7 +41,7 @@ class Connection(metaclass=ConnectionMeta):
 
         self.__receiveThread = threading.Thread(target=self.__receive, args=(), daemon=True)
         self.__sendThread = threading.Thread(target=self.__send, args=(), daemon=True)
-        self.__heartbeatThread = threading.Thread(target=self.__send_hearbeat, args=(), daemon=True)
+        self.__heartbeatThread = threading.Thread(target=self.__send_heartbeat, args=(), daemon=True)
         self.__monitorHeartbeatThread = threading.Thread(target=self.__monitor_heartbeat, args=(), daemon=True)
         self.__receiveThread.start()
         self.__sendThread.start()
@@ -93,10 +93,10 @@ class Connection(metaclass=ConnectionMeta):
                 self.__lastHeartbeatTime = self.__get_time()
                 self.__heartbeatMutex.release()
 
-    def __send_hearbeat(self):
+    def __send_heartbeat(self):
         while self.__keepRunning:
             heartbeat = Heartbeat()
-            heartbeat.system_id = self.__CAR_SYSTEM_ID
+            heartbeat.systemID.value = self.__CAR_SYSTEM_ID
             self.add_to_queue(heartbeat)
             time.sleep(self.__HEARTBEAT_HZ)
 

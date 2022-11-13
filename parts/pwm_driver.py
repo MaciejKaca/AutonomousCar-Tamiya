@@ -1,7 +1,6 @@
 from board import SCL, SDA
 import busio
 from adafruit_pca9685 import PCA9685, PWMChannel
-from adafruit_pca9685 import PCAChannels
 
 
 class PWMDriverMeta(type):
