@@ -4,12 +4,10 @@ from parts.wheel import Wheel
 from parts.pwm_driver import PWMDriver
 from parts.steamdeck_input import SteamDeckInput
 from utils.connection import Connection
-from parts.current_monitor import CurrentMonitor
 import time
 
 clientSocket = Connection()
 clientSocket.wait_for_client()
-currentMonitor = CurrentMonitor()
 steamDeckInput = SteamDeckInput()
 pwm_driver = PWMDriver()
 wheel = Wheel()
